@@ -96,6 +96,8 @@ def _argumentos_engenharia(sub):
     r = sub.add_parser("robo", help="confere URDF, SRDF (com --urdf) ou MJCF do MuJoCo")
     r.add_argument("arquivo")
     r.add_argument("--urdf")
+    for comando in (c, f, s, d, p, r):
+        comando.add_argument("--texto", action="store_true", help="resumo para ler, em vez do JSON completo")
     v = sub.add_parser("ver", help="visualizador ao vivo: refaz e confere a peça a cada salvamento")
     v.add_argument("fonte")
     v.add_argument("--porta", type=int, default=8765)
@@ -129,12 +131,40 @@ COMANDOS = {**COMANDOS_ENGENHARIA,
     "cupom": lambda a: cupom.gerar(a.pasta, a.diametro),
 }
 RESUMOS = {"validar": _resumo, "orientar": _posicoes}
+FORA_DO_TEXTO = {"arquivo", "achados", "nota", "aprovada", "limites", "paredes"}
+
+
+def _vazio(v):
+    return v is None or (isinstance(v, (str, list, dict)) and not v)
+
+
+def _valor(v):
+    if isinstance(v, dict):
+        return ", ".join(f"{k} {x}" for k, x in v.items())
+    if isinstance(v, list):
+        return " x ".join(str(x) for x in v) if all(isinstance(x, (int, float)) for x in v) else ", ".join(map(str, v))
+    return str(v)
+
+
+def _texto(r):
+    """Resumo para gente ler: situação, números e cada achado. O JSON completo sai sem --texto."""
+    linhas = []
+    if "nota" in r:
+        linhas.append(f"{'APROVADA' if r['aprovada'] else 'REPROVADA'}  nota {r['nota']}/100  {r.get('arquivo', '')}")
+    linhas += [f"  {k.replace('_', ' ')}: {_valor(v)}" for k, v in r.items() if k not in FORA_DO_TEXTO and not _vazio(v)]
+    p = r.get("paredes")
+    if isinstance(p, dict) and p.get("medida"):
+        linhas.append(f"  parede: mínima {p['minima_mm']} mm, típica {p['mediana_mm']} mm")
+    linhas += [f"  [{a['gravidade']}] {a['texto']}" for a in r.get("achados", [])]
+    if r.get("limites"):
+        linhas.append(f"  limites: {r['limites']}")
+    return "\n".join(linhas)
 
 
 def main(argv=None):
     args = _argumentos().parse_args(argv)
     r = COMANDOS[args.comando](args)
-    resumir = None if getattr(args, "json", False) else RESUMOS.get(args.comando)
+    resumir = _texto if getattr(args, "texto", False) else None if getattr(args, "json", False) else RESUMOS.get(args.comando)
     sys.stdout.write((resumir(r) if resumir else json.dumps(r, ensure_ascii=False, indent=1)) + "\n")
     return 0 if r.get("aprovada", True) else 1
 
