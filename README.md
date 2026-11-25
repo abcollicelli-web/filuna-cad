@@ -18,6 +18,7 @@ Feito pela [Filuna 3D](https://filuna3d.com). Em português. Licença MIT.
 | [`fatiar-e-imprimir`](skills/fatiar-e-imprimir/SKILL.md) | Fatiar com segurança, várias cores, conferir o resultado e diagnosticar defeitos |
 | [`ferramentas-filuna`](skills/ferramentas-filuna/SKILL.md) | As 23 ferramentas e paramétricos prontos do Filuna e quando usar cada um |
 | [`filuna`](skills/filuna/SKILL.md) | A IA Filuna na conta do cliente: impressoras, erros, estoque, fatiar e imprimir |
+| [`engenharia`](skills/engenharia/SKILL.md) | Além da impressão: usinagem CNC, injeção, chapa, simulação com CalculiX, desenho técnico em PDF, placas KiCad e robôs (URDF, SRDF, MJCF) |
 
 O conhecimento está organizado de dois jeitos:
 
@@ -86,6 +87,25 @@ python -m filuna_cad raio-x peca.stl referencia.png --saida raio_x.png
 O validador não fatia: tempo, gramas e suporte reais saem do fatiador. Os limites estão ditos em
 [`validar`](skills/validar/SKILL.md).
 
+## Engenharia além da impressão
+
+```bash
+pip install "filuna-cad[engenharia] @ git+https://github.com/abcollicelli-web/filuna-cad#subdirectory=ferramentas"
+```
+
+| Comando | O que faz |
+|---|---|
+| `fabricar cnc\|injecao\|chapa peca.step` | Usinagem de 3 eixos (fixações, área sem alcance, canto interno vivo), injeção (eixo do molde, rebaixo, saída, parede) e chapa (espessura, área planificada, peso) |
+| `simular peca.step --fixar zmin --forca-em zmax --forca 0,0,-100 --material pla` | Estática linear no CalculiX com malha do gmsh: deformação, tensão e fator de segurança |
+| `desenho peca.step folha.pdf` | Folha A3 no 1º diedro com três vistas, perspectiva, cotas gerais, furos e legenda |
+| `pcb drc\|erc\|step` | Placa KiCad: regras da placa, regras do esquema e STEP 3D para desenhar a caixa |
+| `robo robo.urdf` | Confere URDF, SRDF (com `--urdf`) e MJCF, que o MuJoCo compila e simula |
+| `conferir peca.step` | Conferência formal por formato: STEP, STL, 3MF, OBJ, GLB e DXF |
+| `ver peca.py` | Visualizador ao vivo no navegador: refaz e confere a peça a cada salvamento |
+
+A simulação foi conferida contra a conta de livro (viga engastada: 0,0195 mm calculado, 0,0191 a 0,0196 mm
+simulado). Os limites de cada comando estão em [`engenharia`](skills/engenharia/SKILL.md).
+
 ## IA Filuna e ferramentas do site
 
 O plugin já traz o conector da IA Filuna (`https://filuna3d.com/api/ia/mcp`). Quem tem conta no Filuna entra,
@@ -118,8 +138,10 @@ achou e o desenho corrigiu.
 - Cupom de folga: um teste impresso de 20 minutos que dá a folga real da sua impressora.
 - Melhor posição na mesa e folha de vistas com corte, sem abrir programa nenhum.
 - Ligação com uma conta real de impressão (o Filuna) e com ferramentas prontas.
+- Fabricação, simulação, desenho técnico, placas e robôs no mesmo formato de achados e nota, com testes que
+  plantam o defeito e provam que ele é achado.
 
-O que **não** está aqui: visualizador próprio, desenho técnico, simulação de esforço, placas de circuito e
+O que **não** está aqui: caminho de corte para CNC, orçamento, simulação não linear (fadiga, impacto) e
 controle direto de impressoras fora do Filuna.
 
 ## Limites, ditos com clareza

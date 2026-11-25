@@ -15,6 +15,9 @@ parte de Python de malha.
 | JavaScript | `npm install three manifold-3d earcut @napi-rs/canvas opentype.js fflate` | |
 | Blender | [blender.org/download](https://www.blender.org/download/) | `blender --version` |
 | OrcaSlicer | [github.com/OrcaSlicer/OrcaSlicer/releases](https://github.com/OrcaSlicer/OrcaSlicer/releases) | |
+| Engenharia (Python) | `pip install "filuna-cad[engenharia]"` a partir deste repositório: gmsh, ezdxf, matplotlib, mujoco, sexpdata, build123d | `python -c "import gmsh, ezdxf, mujoco"` |
+| CalculiX | `apt install calculix-ccx` (Linux) ou o pacote do [calculix.de](http://www.calculix.de) | `ccx -v` |
+| KiCad 8 ou mais novo | `apt install kicad` ou [kicad.org/download](https://www.kicad.org/download/) | `kicad-cli version` |
 
 Observações:
 

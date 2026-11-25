@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filuna CAD ao vivo</title>
+<style>
+  :root { --fundo: #15171c; --painel: #1f2229; --texto: #e8e8ea; --suave: #9aa0aa; --ok: #4cc38a; --aviso: #e8b44c; --erro: #e5675f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: flex; background: var(--fundo); color: var(--texto); font: 14px/1.45 system-ui, sans-serif; }
+  #cena { flex: 1; min-width: 0; }
+  aside { width: 340px; max-width: 45vw; padding: 16px; background: var(--painel); overflow-y: auto; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .nota { font-size: 40px; font-weight: 700; margin: 8px 0 0; }
+  .suave { color: var(--suave); font-size: 12px; }
+  ul { padding-left: 18px; }
+  li.erro { color: var(--erro); } li.aviso { color: var(--aviso); }
+  pre { white-space: pre-wrap; color: var(--erro); font-size: 12px; }
+  @media (max-width: 700px) { body { flex-direction: column; } aside { width: auto; max-width: none; max-height: 45vh; } }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="cena"></div>
+<aside>
+  <h1 id="fonte">Filuna CAD</h1>
+  <div class="suave" id="situacao">Gerando a peça…</div>
+  <div class="nota" id="nota"></div>
+  <div class="suave" id="medidas"></div>
+  <ul id="achados"></ul>
+  <pre id="erro"></pre>
+  <p class="suave">Arraste para girar, role para aproximar. A peça é refeita e conferida a cada vez que você salva o arquivo.</p>
+</aside>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { STLLoader } from "three/addons/loaders/STLLoader.js";
+
+const caixa = document.getElementById("cena");
+const render = new THREE.WebGLRenderer({ antialias: true });
+render.setPixelRatio(devicePixelRatio);
+caixa.appendChild(render.domElement);
+const cena = new THREE.Scene();
+cena.background = new THREE.Color(0x15171c);
+cena.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.6));
+const sol = new THREE.DirectionalLight(0xffffff, 1.6);
+sol.position.set(1, -1.5, 2);
+cena.add(sol);
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100000);
+camera.up.set(0, 0, 1);
+const controle = new OrbitControls(camera, render.domElement);
+let peca = null, grade = null, versao = -1, primeira = true;
+
+function ajustar() {
+  const w = caixa.clientWidth, h = caixa.clientHeight;
+  render.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+addEventListener("resize", ajustar);
+ajustar();
+render.setAnimationLoop(() => { controle.update(); render.render(cena, camera); });
+
+function mostrarPeca(geo) {
+  if (peca) { cena.remove(peca); peca.geometry.dispose(); }
+  geo.computeVertexNormals();
+  peca = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xd8dde6, roughness: 0.6, metalness: 0.05 }));
+  cena.add(peca);
+  geo.computeBoundingBox();
+  const b = geo.boundingBox, tam = new THREE.Vector3(), centro = new THREE.Vector3();
+  b.getSize(tam); b.getCenter(centro);
+  const lado = Math.max(tam.x, tam.y, tam.z);
+  if (grade) cena.remove(grade);
+  grade = new THREE.GridHelper(lado * 3, 30, 0x445066, 0x2a303c);
+  grade.rotation.x = Math.PI / 2;
+  grade.position.set(centro.x, centro.y, b.min.z);
+  cena.add(grade);
+  if (primeira) {
+    camera.position.set(centro.x + lado * 1.8, centro.y - lado * 2.3, centro.z + lado * 1.5);
+    controle.target.copy(centro);
+    primeira = false;
+  }
+}
+
+function texto(id, valor) { document.getElementById(id).textContent = valor; }
+
+function mostrarEstado(e) {
+  texto("fonte", e.fonte || "Filuna CAD");
+  texto("situacao", e.gerando ? "Gerando a peça…" : `Gerada em ${e.segundos} s`);
+  texto("erro", e.erro || "");
+  const c = e.conferencia, lista = document.getElementById("achados");
+  lista.replaceChildren();
+  if (!c) { texto("nota", ""); texto("medidas", ""); return; }
+  const nota = document.getElementById("nota");
+  nota.textContent = `${c.nota}/100`;
+  nota.style.color = c.aprovada ? "var(--ok)" : "var(--erro)";
+  texto("medidas", `${c.malha.medidas_mm.join(" × ")} mm · ${c.malha.volume_cm3} cm³ · ${c.malha.fechada ? "malha fechada" : "MALHA ABERTA"}`);
+  for (const a of c.achados) {
+    const li = document.createElement("li");
+    li.className = a.gravidade;
+    li.textContent = a.texto;
+    lista.appendChild(li);
+  }
+  if (!c.achados.length) { const li = document.createElement("li"); li.textContent = "Nenhum problema no que foi medido."; lista.appendChild(li); }
+}
+
+async function consultar() {
+  try {
+    const e = await (await fetch("/estado", { cache: "no-store" })).json();
+    mostrarEstado(e);
+    if (e.versao !== versao && !e.gerando) {
+      versao = e.versao;
+      if (!e.erro) new STLLoader().load(`/peca.stl?v=${versao}`, mostrarPeca);
+    }
+  } catch (falha) {
+    texto("situacao", "Sem ligação com o visualizador: ele foi fechado?");
+  }
+  setTimeout(consultar, 800);
+}
+consultar();
+</script>
+</body>
+</html>

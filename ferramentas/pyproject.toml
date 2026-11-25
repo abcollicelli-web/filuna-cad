@@ -1,6 +1,6 @@
 [project]
 name = "filuna-cad"
-version = "1.1.2"
+version = "1.2.0"
 description = "Validadores de modelagem e impressão 3D do Filuna: malha, apoio, balanço, parede, estabilidade e raio-x de silhueta"
 license = "MIT"
 requires-python = ">=3.10"
@@ -19,6 +19,15 @@ dependencies = [
 [project.optional-dependencies]
 testes = ["pytest>=8"]
 rapido = ["embreex"]   # raios muito mais rápidos e leves em malhas com centenas de milhares de triângulos
+cad = ["build123d>=0.9"]                       # ler STEP
+engenharia = [                                 # simular, desenho técnico, DXF, robótica
+    "build123d>=0.9",
+    "gmsh>=4.11",
+    "ezdxf>=1.1",
+    "matplotlib>=3.8",
+    "mujoco>=3",
+    "sexpdata>=1",
+]
 
 [project.scripts]
 filuna-cad = "filuna_cad.__main__:main"
@@ -29,6 +38,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["filuna_cad*"]
+
+[tool.setuptools.package-data]
+filuna_cad = ["*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["testes"]

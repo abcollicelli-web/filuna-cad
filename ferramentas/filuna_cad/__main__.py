@@ -1,9 +1,10 @@
-"""Linha de comando: python -m filuna_cad validar|orientar|vistas|comparar|raio-x|cupom ..."""
+"""Linha de comando: python -m filuna_cad <comando> ... (python -m filuna_cad --help lista todos)."""
 import argparse
 import json
 import sys
+from pathlib import Path
 
-from . import comparar, cupom, orientar, validar, vistas
+from . import comparar, conferir, cupom, desenho, fabricar, orientar, pcb, robo, simular, validar, ver, vistas
 
 
 def _mesa(texto):
@@ -58,10 +59,68 @@ def _argumentos():
     k = sub.add_parser("cupom", help="gera o teste de folga para a sua impressora")
     k.add_argument("pasta")
     k.add_argument("--diametro", type=float, default=8.0)
+    _argumentos_engenharia(sub)
     return ap
 
 
-COMANDOS = {
+def _forca(texto):
+    partes = tuple(float(v) for v in texto.split(","))
+    if len(partes) != 3:
+        raise argparse.ArgumentTypeError("use FX,FY,FZ em newtons, por exemplo 0,0,-100")
+    return partes
+
+
+def _argumentos_engenharia(sub):
+    c = sub.add_parser("conferir", help="conferência formal do arquivo: STEP, STL, 3MF, OBJ, GLB ou DXF")
+    c.add_argument("arquivo")
+    f = sub.add_parser("fabricar", help="análise de usinagem CNC, injeção plástica ou chapa metálica")
+    f.add_argument("processo", choices=["cnc", "injecao", "chapa"])
+    f.add_argument("arquivo")
+    s = sub.add_parser("simular", help="simulação estrutural com o CalculiX: deformação e tensão")
+    s.add_argument("arquivo")
+    s.add_argument("--fixar", choices=sorted(simular.FACES), default="zmin")
+    s.add_argument("--forca-em", choices=sorted(simular.FACES), default="zmax")
+    s.add_argument("--forca", type=_forca, default=(0.0, 0.0, -100.0), help="FX,FY,FZ em newtons")
+    s.add_argument("--material", choices=sorted(simular.MATERIAIS), default="pla")
+    s.add_argument("--tamanho", type=float, default=0.0, help="tamanho dos elementos em mm (0: automático)")
+    d = sub.add_parser("desenho", help="folha de desenho técnico cotada em PDF (A3, 1º diedro)")
+    d.add_argument("arquivo")
+    d.add_argument("saida")
+    d.add_argument("--titulo")
+    d.add_argument("--material", default="-")
+    d.add_argument("--autor", default="-")
+    p = sub.add_parser("pcb", help="KiCad: drc da placa, erc do esquema ou STEP 3D da placa")
+    p.add_argument("operacao", choices=["drc", "erc", "step"])
+    p.add_argument("arquivo")
+    p.add_argument("saida", nargs="?")
+    r = sub.add_parser("robo", help="confere URDF, SRDF (com --urdf) ou MJCF do MuJoCo")
+    r.add_argument("arquivo")
+    r.add_argument("--urdf")
+    v = sub.add_parser("ver", help="visualizador ao vivo: refaz e confere a peça a cada salvamento")
+    v.add_argument("fonte")
+    v.add_argument("--porta", type=int, default=8765)
+    v.add_argument("--sem-abrir", action="store_true")
+
+
+def _pcb(a):
+    if a.operacao == "step":
+        if not a.saida:
+            raise SystemExit("pcb step precisa do arquivo de saída: python -m filuna_cad pcb step placa.kicad_pcb placa.step")
+        return pcb.exportar_step(a.arquivo, a.saida)
+    return pcb.drc(a.arquivo) if a.operacao == "drc" else pcb.erc(a.arquivo)
+
+
+COMANDOS_ENGENHARIA = {
+    "conferir": lambda a: conferir.conferir(a.arquivo),
+    "fabricar": lambda a: fabricar.PROCESSOS[a.processo](a.arquivo),
+    "simular": lambda a: simular.simular(a.arquivo, simular.Caso(a.fixar, a.forca_em, a.forca, a.material, a.tamanho)),
+    "desenho": lambda a: desenho.desenhar(a.arquivo, a.saida, desenho.Legenda(a.titulo or Path(a.arquivo).stem, a.material, a.autor)),
+    "pcb": _pcb,
+    "robo": lambda a: robo.conferir(a.arquivo, a.urdf),
+    "ver": lambda a: ver.ver(a.fonte, a.porta, abrir=not a.sem_abrir),
+}
+
+COMANDOS = {**COMANDOS_ENGENHARIA,
     "validar": lambda a: validar.validar(a.arquivo, validar.Limites(mesa=a.mesa, amostras=a.amostras)),
     "orientar": lambda a: orientar.orientar(a.arquivo),
     "vistas": lambda a: vistas.folha(a.arquivo, a.saida),

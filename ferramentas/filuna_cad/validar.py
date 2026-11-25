@@ -23,8 +23,19 @@ class Limites:
     semente: int = 7
 
 
+def malha_do_step(caminho, tolerancia=0.02):
+    """Triangula um STEP com o núcleo OCCT (precisa do build123d) e devolve a malha em mm."""
+    import build123d as bd
+
+    forma = bd.import_step(str(caminho))
+    vertices, triangulos = forma.tessellate(tolerancia, 0.2)
+    return trimesh.Trimesh([tuple(v) for v in vertices], triangulos, process=True)
+
+
 def carregar(caminho):
-    """Lê STL, 3MF ou OBJ como uma malha só, já com as posições das peças aplicadas."""
+    """Lê STL, 3MF, OBJ, GLB ou STEP como uma malha só, já com as posições das peças aplicadas."""
+    if str(caminho).lower().endswith((".step", ".stp")):
+        return malha_do_step(caminho)
     cena = trimesh.load(caminho, process=True)
     if isinstance(cena, trimesh.Scene):
         partes = cena.dump()

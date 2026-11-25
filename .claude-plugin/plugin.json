@@ -1,6 +1,6 @@
 {
   "name": "filuna-cad",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Modelagem e impressão 3D com IA, pelo Filuna: escolher o motor certo, modelar por código, validar a peça (malha, apoio, parede, balanço, raio-x), fatiar e imprimir pela conta Filuna.",
   "author": { "name": "Filuna 3D", "url": "https://filuna3d.com" },
   "homepage": "https://github.com/abcollicelli-web/filuna-cad",

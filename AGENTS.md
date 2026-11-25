@@ -17,6 +17,8 @@ forma simples e direta.
 | Fatiar, imprimir, várias cores, defeito de impressão | `skills/fatiar-e-imprimir/SKILL.md` |
 | Ferramenta pronta do Filuna | `skills/ferramentas-filuna/SKILL.md` |
 | Conta, impressoras e pedidos do cliente no Filuna | `skills/filuna/SKILL.md` |
+| Usinar, injetar, chapa, simular esforço, desenho técnico, placa KiCad, robô | `skills/engenharia/SKILL.md` |
+| Conferir o formato do arquivo (STEP, GLB, DXF) ou ver a peça ao vivo | `skills/engenharia/SKILL.md` |
 
 ## Regras que valem em tudo
 
