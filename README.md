@@ -95,6 +95,8 @@ oficial da impressora e a mandar imprimir depois do sim.
 - **Nada imprime sem confirmação**, e cada cliente só vê a própria conta.
 - **Arquivos de modelos, paramétricos e ferramentas do Filuna são protegidos:** eles abrem e imprimem pelo
   Filuna Slicer, e o assistente nunca entrega arquivo, link ou G-code deles.
+- **Conferir a peça do cliente:** a ferramenta `filuna_conferir_peca` roda os validadores deste repositório no
+  servidor do Filuna sobre o arquivo que o próprio cliente enviou à Farm e devolve só medidas e avisos.
 - **Sem conta no Filuna**, as habilidades de modelar, projetar, validar e fatiar funcionam do mesmo jeito.
 
 As 23 ferramentas prontas (chaveiro com logo, foto para 3MF colorido, litofania, troféus, placa Pix, separar e

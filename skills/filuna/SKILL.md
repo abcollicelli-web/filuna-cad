@@ -35,6 +35,10 @@ forma simples e direta. Você é uma IA: não finja ser da equipe Filuna.
 1. Arquivo: se a conversa entregar o anexo, use `filuna_receber_arquivo`. Se não (é o caso do Claude), chame
    `filuna_como_enviar_arquivo`, passe os passos ao cliente e, quando ele disser que enviou, use `filuna_pedidos`.
 2. `filuna_pedido`: espere sair de `calculando`; mostre peças, tempo e gramas.
+   Em seguida, `filuna_conferir_peca` mede a peça que o cliente enviou (malha, apoio, balanço, parede mais fina,
+   se tomba, se cabe nas impressoras dele e qual é a melhor posição na mesa). Explique cada aviso em palavras
+   simples e proponha a mudança no desenho antes de propor suporte. Ela não confere pedido de modelo do catálogo
+   (protegido) e não prova resistência nem folga de encaixe.
 3. Veja a impressora e as bobinas (`filuna_impressoras`, `filuna_estoque`) e recomende material, cópias e cores.
    O Filuna já usa o perfil oficial da impressora do cliente; mude com `filuna_configurar_pedido` só o que ele aceitar.
 4. `filuna_preparar_impressao`: mostre impressora, cor, tempo e gramas de cada mesa e o que falta resolver.
