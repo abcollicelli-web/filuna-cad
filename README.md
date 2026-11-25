@@ -6,6 +6,9 @@ assistentes como o Claude, mais os validadores que conferem a peça com números
 Feito pela [Filuna 3D](https://filuna3d.com). Em português. Licença MIT. Página do projeto:
 [filuna3d.com/filuna-cad](https://filuna3d.com/filuna-cad).
 
+**Primeira vez? Leia o [Manual](MANUAL.md):** como colocar na sua IA (Claude, ChatGPT e outros), instalar,
+o que pedir na conversa e como ler cada resultado, com exemplos reais.
+
 ![Suporte de celular em forma de 4, gerado e validado com o Filuna CAD](exemplos/suporte-celular-4/suporte4.png)
 
 ## O que o assistente passa a fazer

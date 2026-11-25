@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- Braço com dois erros de propósito, para ver a conferência achar: limite invertido e inércia impossível. -->
+<robot name="braco">
+  <link name="base"><inertial><mass value="1"/><inertia ixx="0.01" iyy="0.01" izz="0.01" ixy="0" ixz="0" iyz="0"/></inertial></link>
+  <link name="ombro"><inertial><mass value="0.5"/><inertia ixx="0.002" iyy="0.002" izz="0.001" ixy="0" ixz="0" iyz="0"/></inertial></link>
+  <link name="antebraco"><inertial><mass value="0.3"/><inertia ixx="0.01" iyy="0.001" izz="0.001" ixy="0" ixz="0" iyz="0"/></inertial></link>
+  <joint name="giro" type="revolute"><parent link="base"/><child link="ombro"/><axis xyz="0 0 1"/><limit lower="-1.5" upper="1.5" effort="5" velocity="1"/></joint>
+  <joint name="cotovelo" type="revolute"><parent link="ombro"/><child link="antebraco"/><axis xyz="0 1 0"/><limit lower="1" upper="-1" effort="5" velocity="1"/></joint>
+</robot>
