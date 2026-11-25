@@ -1,0 +1,26 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar
+        run: pip install -e "ferramentas[testes]"
+      - name: Validadores
+        run: cd ferramentas && python -m pytest -q
+      - name: Links, skills e conteúdo privado
+        run: python ferramentas/testes/conferir_repositorio.py
+      - name: O exemplo continua aprovado
+        run: python -m filuna_cad validar exemplos/suporte-celular-4/suporte4_openscad.stl

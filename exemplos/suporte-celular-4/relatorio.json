@@ -1,0 +1,14 @@
+{
+ "estanque": true,
+ "volume_consistente": true,
+ "euler": 0,
+ "triangulos": 136,
+ "volume_cm3": 520.85,
+ "medidas_mm": [
+  160.0,
+  110.0,
+  80.0
+ ],
+ "area_perfil_mm2": 6510.6,
+ "cor": "#7C3AED"
+}

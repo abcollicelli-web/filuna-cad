@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "filuna": { "type": "http", "url": "https://filuna3d.com/api/ia/mcp" }
+  }
+}

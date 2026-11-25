@@ -1,0 +1,12 @@
+{
+  "name": "filuna",
+  "description": "Habilidades da Filuna 3D para modelar, validar, fatiar e imprimir peças 3D com IA.",
+  "owner": { "name": "Filuna 3D", "url": "https://filuna3d.com" },
+  "plugins": [
+    {
+      "name": "filuna-cad",
+      "source": "./",
+      "description": "Modelagem e impressão 3D com IA, pelo Filuna."
+    }
+  ]
+}

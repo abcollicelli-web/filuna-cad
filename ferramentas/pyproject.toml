@@ -1,0 +1,33 @@
+[project]
+name = "filuna-cad"
+version = "1.1.1"
+description = "Validadores de modelagem e impressão 3D do Filuna: malha, apoio, balanço, parede, estabilidade e raio-x de silhueta"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "trimesh>=4,<6",
+    "shapely>=2,<3",
+    "manifold3d>=3,<4",
+    "rtree>=1",
+    "pillow>=10",
+    "lxml>=5",
+    "networkx>=3",
+]
+
+[project.optional-dependencies]
+testes = ["pytest>=8"]
+
+[project.scripts]
+filuna-cad = "filuna_cad.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["filuna_cad*"]
+
+[tool.pytest.ini_options]
+testpaths = ["testes"]
