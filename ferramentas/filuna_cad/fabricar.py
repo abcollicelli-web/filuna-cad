@@ -40,6 +40,25 @@ def _alcance(m, pontos, normais, sentido):
     return ok
 
 
+PONTOS_CERTEZA = 3   # menos pontos que isso pode ser só a amostra caindo rente a uma aresta
+
+
+def _onde(pontos, mascara, limite=5):
+    """Até `limite` pontos (mm) onde o problema foi achado, para a pessoa olhar na peça."""
+    return [[round(float(v), 1) for v in p] for p in pontos[mascara][:limite]]
+
+
+def _area_escondida(mascara, area_ponto, tema, texto):
+    """Erro quando vários pontos concordam; com um ou dois pontos é aviso para conferir no lugar indicado."""
+    n = int(mascara.sum())
+    if not n:
+        return None
+    area = round(n * area_ponto, 1)
+    if n < PONTOS_CERTEZA:
+        return ("aviso", tema, f"Possível: {area} mm² (só {n} ponto(s) da amostra) {texto} Confira no lugar indicado.")
+    return ("erro", tema, f"{area} mm² {texto}")
+
+
 def _cobrir(alcances):
     """Menor conjunto de fixações que alcança tudo o que é alcançável (escolha gulosa)."""
     falta = np.logical_or.reduce(list(alcances.values()))
@@ -76,11 +95,12 @@ def usinagem(caminho, amostras=6000):
          "material_removido": round(1 - abs(m.volume) / float(np.prod(bloco)), 3),
          "fixacoes": fixacoes, "alcance_por_lado": {k: round(float(v.mean()), 3) for k, v in alcances.items()},
          "area_sem_alcance_mm2": round(float(sem_alcance.sum() * area_ponto), 1),
-         "cantos_internos_vivos_mm": cantos}
+         "sem_alcance_em": _onde(pontos, sem_alcance), "cantos_internos_vivos_mm": cantos}
     a = []
-    if r["area_sem_alcance_mm2"] > 1:
-        a.append(("erro", "alcance", f"{r['area_sem_alcance_mm2']} mm² não são alcançados de nenhum dos 6 lados: "
-                                     "rebaixo escondido. Abra o rebaixo para um lado ou use 5 eixos."))
+    achado = _area_escondida(sem_alcance, area_ponto, "alcance", "não são alcançados de nenhum dos 6 lados: rebaixo escondido. "
+                                                                 "Abra o rebaixo para um lado ou use 5 eixos.")
+    if achado:
+        a.append(achado)
     if len(fixacoes) > 2:
         a.append(("aviso", "fixacoes", f"{len(fixacoes)} fixações ({', '.join(fixacoes)}): cada uma custa tempo e precisão."))
     for k, mm in cantos.items():
@@ -97,8 +117,8 @@ def _eixo_de_extracao(m, pontos, normais):
     for nome, d in (("Z", (0, 0, 1)), ("X", (1, 0, 0)), ("Y", (0, 1, 0))):
         d = np.asarray(d, float)
         sai = _alcance(m, pontos, normais, d) | _alcance(m, pontos, normais, -d)
-        presa = float((~sai).mean())
-        if melhor is None or presa < melhor[1]:
+        presa = ~sai
+        if melhor is None or presa.sum() < melhor[1].sum():
             melhor = (nome, presa, d)
     return melhor
 
@@ -109,13 +129,15 @@ def injecao(caminho, amostras=6000):
     eixo, presa, d = _eixo_de_extracao(m, pontos, normais)
     inclinacao = np.abs(normais @ d)
     paredes = medir_paredes(m, Limites(amostras=amostras))
-    r = {"processo": "injeção plástica", "eixo_de_extracao": eixo, "area_presa_mm2": round(presa * len(pontos) * area_ponto, 1),
+    r = {"processo": "injeção plástica", "eixo_de_extracao": eixo, "area_presa_mm2": round(float(presa.sum() * area_ponto), 1),
+         "presa_em": _onde(pontos, presa),
          "area_sem_saida_mm2": round(float((inclinacao < SEM_SAIDA).sum() * area_ponto), 1),
          "area_saida_menor_1grau_mm2": round(float(((inclinacao >= SEM_SAIDA) & (inclinacao < SAIDA_BOA)).sum() * area_ponto), 1),
          "paredes": paredes}
     a = []
-    if r["area_presa_mm2"] > 1:
-        a.append(("erro", "rebaixo", f"{r['area_presa_mm2']} mm² ficam presos no molde no eixo {eixo}: precisa de gaveta ou mudar o desenho."))
+    achado = _area_escondida(presa, area_ponto, "rebaixo", f"ficam presos no molde no eixo {eixo}: precisa de gaveta ou mudar o desenho.")
+    if achado:
+        a.append(achado)
     if r["area_sem_saida_mm2"] > 1:
         a.append(("aviso", "saida", f"{r['area_sem_saida_mm2']} mm² de parede reta no sentido do molde: dê pelo menos 1 grau de saída."))
     if paredes.get("medida"):
