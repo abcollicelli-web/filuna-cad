@@ -3,7 +3,8 @@
 **Modelagem e impressão 3D com IA, do pedido à peça impressa.** Um conjunto de habilidades (skills) para
 assistentes como o Claude, mais os validadores que conferem a peça com números antes de gastar filamento.
 
-Feito pela [Filuna 3D](https://filuna3d.com). Em português. Licença MIT.
+Feito pela [Filuna 3D](https://filuna3d.com). Em português. Licença MIT. Página do projeto:
+[filuna3d.com/filuna-cad](https://filuna3d.com/filuna-cad).
 
 ![Suporte de celular em forma de 4, gerado e validado com o Filuna CAD](exemplos/suporte-celular-4/suporte4.png)
 
@@ -117,6 +118,8 @@ oficial da impressora e a mandar imprimir depois do sim.
   Filuna Slicer, e o assistente nunca entrega arquivo, link ou G-code deles.
 - **Conferir a peça do cliente:** a ferramenta `filuna_conferir_peca` roda os validadores deste repositório no
   servidor do Filuna sobre o arquivo que o próprio cliente enviou à Farm e devolve só medidas e avisos.
+- **Fabricar e aguentar esforço:** a ferramenta `filuna_analisar_engenharia` faz no mesmo arquivo a análise de
+  usinagem CNC, injeção, chapa ou a simulação com o CalculiX, e também devolve só números e avisos.
 - **Sem conta no Filuna**, as habilidades de modelar, projetar, validar e fatiar funcionam do mesmo jeito.
 
 As 23 ferramentas prontas (chaveiro com logo, foto para 3MF colorido, litofania, troféus, placa Pix, separar e
