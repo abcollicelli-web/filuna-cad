@@ -1,6 +1,6 @@
 [project]
 name = "filuna-cad"
-version = "1.1.1"
+version = "1.1.2"
 description = "Validadores de modelagem e impressão 3D do Filuna: malha, apoio, balanço, parede, estabilidade e raio-x de silhueta"
 license = "MIT"
 requires-python = ">=3.10"
@@ -18,6 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 testes = ["pytest>=8"]
+rapido = ["embreex"]   # raios muito mais rápidos e leves em malhas com centenas de milhares de triângulos
 
 [project.scripts]
 filuna-cad = "filuna_cad.__main__:main"

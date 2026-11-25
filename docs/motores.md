@@ -5,6 +5,7 @@ parte de Python de malha.
 
 | Motor | Instalar | Conferir |
 |---|---|---|
+| Raios rápidos (recomendado para malhas grandes) | `pip install embreex` | `python -c "from trimesh import ray; print(ray.has_embree)"` |
 | Python de malha | `pip install shapely manifold3d trimesh mapbox-earcut rtree scipy lxml networkx pillow` | `python -c "import manifold3d, trimesh, shapely"` |
 | Imagem para contorno | `pip install numpy scikit-image opencv-python-headless fonttools svgpathtools` | |
 | build123d | `pip install build123d` | `python -c "import build123d"` |

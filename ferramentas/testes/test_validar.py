@@ -110,3 +110,14 @@ def test_chanfro_de_45_graus_nao_conta_como_balanco(tmp_path):
     m = trimesh.Trimesh(np.asarray(s.vert_properties)[:, :3], np.asarray(s.tri_verts))
     r = validar.validar(salvar(m, tmp_path, "chanfrada.stl"))
     assert r["balancos"]["area_mm2"] == 0 and r["nota"] == 100
+
+
+def test_raios_em_lotes_dao_o_mesmo_resultado_que_de_uma_vez(tmp_path, monkeypatch):
+    """A espessura medida em lotes de raios é igual à medida de uma vez só (o lote existe para limitar a memória)."""
+    grande = trimesh.creation.icosphere(subdivisions=5, radius=30)
+    caminho = salvar(grande, tmp_path, "esfera.stl")
+    em_lote = validar.validar(caminho, validar.Limites(amostras=1200))
+    monkeypatch.setattr(validar, "LOTE_RAIOS", 10_000)
+    de_uma_vez = validar.validar(caminho, validar.Limites(amostras=1200))
+    assert em_lote["paredes"] == de_uma_vez["paredes"]
+    assert em_lote["paredes"]["minima_mm"] == pytest.approx(60, abs=1.5)

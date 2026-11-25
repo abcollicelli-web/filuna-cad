@@ -13,6 +13,7 @@ PAREDE_MINIMA = 0.8      # duas passadas de bico 0,4 mm
 PAREDE_FRAGIL = 2.0      # abaixo disso uma parede solta quebra na mão
 ANGULO_BALANCO = 45.0    # graus a partir da vertical que imprimem sem suporte
 FOLGA_Z = 0.02
+LOTE_RAIOS = 400         # raios por vez: sem o Embree o trimesh gasta memória na proporção de raios x triângulos
 
 
 @dataclass
@@ -72,7 +73,11 @@ def medir_paredes(m, lim):
     """Espessura medida por raios: de cada ponto da superfície para dentro, até sair do outro lado."""
     pontos, faces = trimesh.sample.sample_surface(m, lim.amostras, seed=lim.semente)
     normais = m.face_normals[faces]
-    onde, raio, bateu = m.ray.intersects_location(pontos - normais * 1e-3, -normais, multiple_hits=False)
+    achados = [m.ray.intersects_location(pontos[i:i + LOTE_RAIOS] - normais[i:i + LOTE_RAIOS] * 1e-3, -normais[i:i + LOTE_RAIOS],
+                                         multiple_hits=False) + (i,) for i in range(0, len(pontos), LOTE_RAIOS)]
+    onde = np.concatenate([a[0] for a in achados])
+    raio = np.concatenate([a[1] + a[3] for a in achados])
+    bateu = np.concatenate([a[2] for a in achados])
     # Só conta como parede quando a face do outro lado é quase paralela: numa quina a espessura cai a zero sem ser defeito.
     parede = np.einsum("ij,ij->i", m.face_normals[bateu], normais[raio]) < -0.7
     onde, raio = onde[parede], raio[parede]
