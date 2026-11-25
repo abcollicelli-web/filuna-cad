@@ -162,6 +162,8 @@ def _texto(r):
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")   # no Windows o padrão do console estraga os acentos
     args = _argumentos().parse_args(argv)
     r = COMANDOS[args.comando](args)
     resumir = _texto if getattr(args, "texto", False) else None if getattr(args, "json", False) else RESUMOS.get(args.comando)
